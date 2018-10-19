@@ -1,6 +1,6 @@
 [package]
 name = "power-assert"
-version = "0.3.9"
+version = "0.4.0"
 authors = ["gifnksm <makoto.nksm+github@gmail.com>"]
 license = "MIT"
 readme = "README.md"
@@ -9,5 +9,16 @@ description = "Power Assert in Rust. Provides better assertion message."
 
 [lib]
 name = "power_assert"
-path = "src/lib.rs"
-plugin = true
+proc-macro = true
+
+[[examples]]
+name = "override_builtins"
+required-features = ["override_builtins"]
+
+[dependencies]
+syn = { version = "0.15", features = ["full", "fold", "extra-traits"] }
+quote = "0.6"
+proc-macro2 = { version = "0.4", features = ["nightly"] }
+
+[features]
+override_builtins = []

@@ -1,3 +1,6 @@
+#![recursion_limit = "1024"]
+#![feature(proc_macro_span)]
+
 #![warn(missing_copy_implementations)]
 #![warn(missing_debug_implementations)]
 #![warn(trivial_casts)]
@@ -7,64 +10,36 @@
 #![warn(unused_qualifications)]
 #![warn(unused_results)]
 
-#![feature(plugin_registrar)]
-#![feature(rustc_private)]
-#![feature(quote)]
+#[macro_use]
+extern crate syn;
+#[macro_use]
+extern crate quote;
+extern crate proc_macro2;
+extern crate proc_macro;
 
-extern crate syntax;
-extern crate rustc_plugin;
-
-use syntax::ast::MetaItemKind;
-use rustc_plugin::Registry;
+use proc_macro::TokenStream;
 
 mod expand;
 mod convert;
 
-struct Arg {
-    override_builtins: bool,
+#[proc_macro]
+pub fn power_assert(input: TokenStream) -> TokenStream {
+     expand::expand_assert(input)
 }
 
-impl Default for Arg {
-    fn default() -> Arg {
-        Arg { override_builtins: false }
-    }
+#[proc_macro]
+pub fn power_assert_eq(input: TokenStream) -> TokenStream {
+    expand::expand_assert_eq(input)
 }
 
-impl Arg {
-    fn parse(reg: &mut Registry) -> Arg {
-        let mut result = Arg::default();
-
-        for arg in reg.args() {
-            match arg.node {
-                MetaItemKind::Word(ref ns) => {
-                    match &**ns {
-                        "override_builtins" => {
-                            result.override_builtins = true;
-                        }
-                        _ => {
-                            reg.sess.span_err(arg.span, "invalid argument");
-                        }
-                    }
-                }
-                _ => {
-                    reg.sess.span_err(arg.span, "invalid argument");
-                }
-            }
-        }
-
-        result
-    }
+#[cfg(feature = "override_globals")]
+#[proc_macro]
+pub fn assert(input: TokenStream) -> TokenStream {
+    expand::expand_assert(input)
 }
 
-#[plugin_registrar]
-pub fn plugin_registrar(reg: &mut Registry) {
-    let arg = Arg::parse(reg);
-
-    if arg.override_builtins {
-        reg.register_macro("assert", expand::expand_assert);
-        reg.register_macro("assert_eq", expand::expand_assert_eq);
-    }
-
-    reg.register_macro("power_assert", expand::expand_assert);
-    reg.register_macro("power_assert_eq", expand::expand_assert_eq);
+#[cfg(feature = "override_globals")]
+#[proc_macro]
+pub fn assert_eq(input: TokenStream) -> TokenStream {
+    expand::expand_assert_eq(input)
 }

@@ -1,3 +1,5 @@
+#![feature(proc_macro_hygiene)]
+
 #![warn(missing_copy_implementations)]
 #![warn(missing_debug_implementations)]
 #![warn(trivial_casts)]
@@ -7,10 +9,10 @@
 #![warn(unused_qualifications)]
 #![warn(unused_results)]
 
-#![feature(plugin)]
-#![plugin(power_assert)]
-
 use std::thread;
+
+#[macro_use]
+extern crate power_assert;
 
 #[derive(Debug)]
 struct Foo {
